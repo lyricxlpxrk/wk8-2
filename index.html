@@ -1,0 +1,688 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Grammar Reading Lab - Noticing</title>
+<style>
+:root {
+  --navy:#243858;
+  --blue:#4268ad;
+  --pale:#eef3fc;
+  --ink:#283548;
+  --muted:#68778b;
+  --line:#e0e6ef;
+  --green:#267650;
+  --red:#b34343;
+  --yellow:#fff09b;
+}
+* { box-sizing:border-box; }
+body {
+  margin:0;
+  color:var(--ink);
+  background:#f4f6fa;
+  font-family:Arial,"Malgun Gothic",sans-serif;
+  line-height:1.8;
+}
+button,input { font:inherit; }
+button { cursor:pointer; }
+button:focus-visible,input:focus-visible {
+  outline:3px solid #e4ad27;
+  outline-offset:3px;
+}
+header {
+  background:var(--navy);
+  color:white;
+  padding:24px 20px;
+}
+.header-inner,main {
+  width:min(820px,100%);
+  margin:auto;
+}
+.brand {
+  font-size:12px;
+  letter-spacing:2px;
+  color:#d6e3fb;
+}
+header h1 { margin:5px 0; font-size:27px; }
+header p { margin:0; color:#e0e8f6; font-size:14px; }
+main { padding:22px 16px 48px; }
+.progress-label {
+  display:flex;
+  justify-content:space-between;
+  color:var(--muted);
+  font-size:12px;
+  margin-bottom:6px;
+}
+.progress {
+  height:6px;
+  border-radius:9px;
+  background:#e0e6ef;
+  overflow:hidden;
+  margin-bottom:18px;
+}
+.progress-fill {
+  height:100%;
+  width:25%;
+  background:var(--blue);
+  transition:width .2s;
+}
+.steps {
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:7px;
+  margin-bottom:18px;
+}
+.step-tab {
+  padding:9px 3px;
+  background:white;
+  border:1px solid var(--line);
+  border-radius:9px;
+  color:var(--muted);
+  font-size:12px;
+}
+.step-tab.active {
+  background:var(--pale);
+  border-color:var(--blue);
+  color:var(--navy);
+  font-weight:bold;
+}
+.step-tab:disabled { opacity:.55; cursor:default; }
+.card {
+  padding:24px;
+  background:white;
+  border:1px solid var(--line);
+  border-radius:16px;
+  box-shadow:0 4px 16px #24385808;
+}
+.hidden { display:none!important; }
+.eyebrow {
+  color:var(--blue);
+  font-weight:bold;
+  font-size:12px;
+  letter-spacing:1px;
+}
+h2 { font-size:23px; line-height:1.5; margin:5px 0 10px; }
+h3 { font-size:17px; margin:22px 0 8px; }
+p { margin:8px 0; }
+.muted { color:var(--muted); font-size:14px; }
+.story {
+  background:#f8f9fc;
+  padding:17px 19px;
+  border-radius:12px;
+  margin:18px 0;
+}
+.story p { margin:0 0 13px; }
+.story p:last-child { margin-bottom:0; }
+
+/* 문법 강조는 처음부터 노출하지 않는다. */
+.target {
+  border-radius:3px;
+  transition:background .2s, box-shadow .2s;
+}
+.target.noticed {
+  background:linear-gradient(
+    transparent 43%,
+    var(--yellow) 43%,
+    var(--yellow) 94%,
+    transparent 94%
+  );
+  box-shadow:inset 0 -2px 0 #d5a92d;
+  font-weight:700;
+}
+.target.noticed .rel {
+  color:#254f9b;
+  text-decoration:underline;
+  text-decoration-thickness:2px;
+  text-underline-offset:3px;
+}
+.target.noticed .clause {
+  text-decoration:underline;
+  text-decoration-color:#c6a12b;
+  text-decoration-thickness:1px;
+  text-underline-offset:4px;
+}
+.reveal-btn {
+  background:#fff3c5;
+  color:#654e0d;
+  border:1px solid #e6d38b;
+  border-radius:9px;
+  padding:11px 14px;
+  font-weight:bold;
+}
+.primary,.secondary {
+  padding:11px 16px;
+  border:0;
+  border-radius:9px;
+  font-weight:bold;
+}
+.primary { background:var(--blue); color:white; }
+.primary:hover { background:#34558f; }
+.secondary { background:#edf0f6; color:var(--navy); }
+button:disabled { opacity:.5; cursor:not-allowed; }
+.actions {
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  margin-top:24px;
+}
+.actions button { min-height:44px; }
+.hint {
+  background:#f4f7fc;
+  border-left:4px solid #91a8d2;
+  border-radius:7px;
+  padding:13px 15px;
+  margin:16px 0;
+}
+.discovery-box {
+  background:#fff9df;
+  border:1px solid #f0df9c;
+  border-radius:10px;
+  padding:15px;
+  margin:17px 0;
+}
+.definition {
+  background:var(--pale);
+  border-left:4px solid var(--blue);
+  padding:14px 16px;
+  border-radius:7px;
+  margin:16px 0;
+}
+.translation {
+  margin-top:17px;
+  border-top:1px dashed var(--line);
+  padding-top:12px;
+}
+.translation p { font-size:14px; }
+.question {
+  padding:17px 0;
+  border-bottom:1px solid var(--line);
+}
+.question:last-child { border-bottom:0; }
+.q-title { font-weight:bold; margin-bottom:10px; }
+.option {
+  display:block;
+  padding:10px 12px;
+  margin:7px 0;
+  border:1px solid var(--line);
+  border-radius:8px;
+  cursor:pointer;
+}
+.option:hover { background:#f7f9fd; }
+.option input { accent-color:var(--blue); margin-right:8px; }
+.option.correct { background:#edf8f1; border-color:var(--green); }
+.option.wrong { background:#fff0f0; border-color:var(--red); }
+.feedback {
+  padding:10px 12px;
+  border-radius:8px;
+  font-size:14px;
+  margin:10px 0;
+}
+.feedback.good { background:#edf8f1; color:#1e6948; }
+.feedback.bad { background:#fff0f0; color:#943838; }
+.feedback.neutral { background:#f0f3f8; }
+.result-box {
+  margin-top:22px;
+  padding:20px;
+  text-align:center;
+  background:var(--pale);
+  border-radius:12px;
+}
+.result-score { font-size:34px; font-weight:bold; color:var(--blue); }
+.footer {
+  text-align:center;
+  font-size:12px;
+  color:var(--muted);
+  margin-top:20px;
+}
+@media(max-width:500px) {
+  header h1 { font-size:23px; }
+  .card { padding:17px; }
+  .step-tab { font-size:10px; }
+  .actions button { flex:1; padding:10px 6px; }
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <div class="brand">ENGLISH · READING · GRAMMAR</div>
+    <h1>Grammar Reading Lab</h1>
+    <p>읽고, 발견하고, 스스로 규칙을 찾아가는 문법 학습</p>
+  </div>
+</header>
+
+<main>
+  <div class="progress-label">
+    <span id="progressText">STEP 1 · 글 읽기</span>
+    <span id="progressPercent">25% 진행</span>
+  </div>
+  <div class="progress">
+    <div class="progress-fill" id="progressFill"></div>
+  </div>
+
+  <nav class="steps" aria-label="학습 단계">
+    <button class="step-tab active" data-step="0">1. 읽기</button>
+    <button class="step-tab" data-step="1" disabled>2. 발견</button>
+    <button class="step-tab" data-step="2" disabled>3. 개념</button>
+    <button class="step-tab" data-step="3" disabled>4. 연습</button>
+  </nav>
+
+  <!-- STEP 1: 의미 중심의 첫 읽기 -->
+  <section class="card" id="stage0">
+    <div class="eyebrow">STEP 1 · FIRST READING</div>
+    <h2>A Fun Day at the Park</h2>
+    <p class="muted">
+      먼저 글을 읽고 무슨 일이 일어났는지 이해해 보세요.
+      모르는 표현이 있어도 전체적인 의미를 파악하는 데 집중하세요.
+    </p>
+
+    <div class="story" id="readingStory">
+      <p>1. Mia has a dog <span class="target"><span class="rel">that</span> <span class="clause">loves soccer</span></span>.</p>
+      <p>2. One day, she meets a boy <span class="target"><span class="rel">who</span> <span class="clause">plays soccer after school</span></span>.</p>
+      <p>3. He brings a ball <span class="target"><span class="rel">that</span> <span class="clause">is made of soft rubber</span></span>.</p>
+      <p>4. They go to a park <span class="target"><span class="rel">which</span> <span class="clause">is near their school</span></span>.</p>
+      <p>5. A girl <span class="target"><span class="rel">who</span> <span class="clause">lives nearby</span></span> joins them.</p>
+      <p>6. They play a game <span class="target"><span class="rel">that</span> <span class="clause">makes everyone happy</span></span>.</p>
+    </div>
+
+    <div class="hint">
+      <strong>읽기 미션</strong>
+      <p>미아와 친구들은 공원에서 무엇을 했나요?</p>
+      <button class="secondary" id="meaningHint" type="button">
+        내용 이해 확인하기
+      </button>
+      <p id="meaningFeedback" class="hidden" aria-live="polite">
+        미아와 친구들은 공원에서 함께 축구 게임을 했어요.
+      </p>
+    </div>
+
+    <div class="translation">
+      <strong>해석이 필요하다면?</strong>
+      <button class="secondary" id="translationBtn" type="button"
+        aria-expanded="false">해석 보기</button>
+      <div id="translationText" class="hidden">
+        <p>1. 미아는 축구를 좋아하는 개를 키운다.</p>
+        <p>2. 어느 날, 그녀는 방과 후에 축구를 하는 남자아이를 만난다.</p>
+        <p>3. 남자아이는 부드러운 고무로 만들어진 공을 가져온다.</p>
+        <p>4. 그들은 학교 근처에 있는 공원으로 간다.</p>
+        <p>5. 근처에 사는 여자아이가 그들과 합류한다.</p>
+        <p>6. 그들은 모두를 행복하게 만드는 게임을 한다.</p>
+      </div>
+    </div>
+
+    <div class="actions">
+      <span></span>
+      <button class="primary" id="to1">다 읽었어요 →</button>
+    </div>
+  </section>
+
+  <!-- STEP 2: 형태 알아차리기 -->
+  <section class="card hidden" id="stage1">
+    <div class="eyebrow">STEP 2 · NOTICING</div>
+    <h2>다시 읽으며 공통점을 발견해 보세요</h2>
+    <p>
+      같은 글을 다시 읽어 봅시다. 이번에는 반복되는 표현에 주목해 보세요.
+      아래 버튼을 누르면 관찰할 표현이 표시됩니다.
+    </p>
+
+    <div class="story" id="noticingStory">
+      <p>1. Mia has a dog <span class="target"><span class="rel">that</span> <span class="clause">loves soccer</span></span>.</p>
+      <p>2. One day, she meets a boy <span class="target"><span class="rel">who</span> <span class="clause">plays soccer after school</span></span>.</p>
+      <p>3. He brings a ball <span class="target"><span class="rel">that</span> <span class="clause">is made of soft rubber</span></span>.</p>
+      <p>4. They go to a park <span class="target"><span class="rel">which</span> <span class="clause">is near their school</span></span>.</p>
+      <p>5. A girl <span class="target"><span class="rel">who</span> <span class="clause">lives nearby</span></span> joins them.</p>
+      <p>6. They play a game <span class="target"><span class="rel">that</span> <span class="clause">makes everyone happy</span></span>.</p>
+    </div>
+
+    <button class="reveal-btn" id="revealBtn" type="button">
+      표현에 형광펜 표시하기
+    </button>
+    <p id="revealStatus" class="muted" aria-live="polite">
+      표시하기 전, 기억나는 반복 표현이 있는지 떠올려 보세요.
+    </p>
+
+    <div class="discovery-box">
+      <strong>관찰 질문 1</strong>
+      <p>표시된 표현 바로 앞에는 주로 어떤 단어가 있나요?</p>
+      <label class="option"><input type="radio" name="observe1" value="a"> 사람, 사물, 동물을 나타내는 명사</label>
+      <label class="option"><input type="radio" name="observe1" value="b"> 조동사만 있음</label>
+      <label class="option"><input type="radio" name="observe1" value="c"> 문장 부호만 있음</label>
+      <div id="observeFeedback1" class="feedback hidden" aria-live="polite"></div>
+      <button class="secondary" type="button" id="checkObserve1">확인하기</button>
+    </div>
+
+    <div class="discovery-box">
+      <strong>관찰 질문 2</strong>
+      <p>표시된 표현 뒤의 말은 앞의 명사에 대해 어떤 정보를 주나요?</p>
+      <label class="option"><input type="radio" name="observe2" value="a"> 앞의 명사를 설명함</label>
+      <label class="option"><input type="radio" name="observe2" value="b"> 앞의 명사와 관계없는 새로운 주제만 제시함</label>
+      <label class="option"><input type="radio" name="observe2" value="c"> 항상 미래의 일을 나타냄</label>
+      <div id="observeFeedback2" class="feedback hidden" aria-live="polite"></div>
+      <button class="secondary" type="button" id="checkObserve2">확인하기</button>
+    </div>
+
+    <div class="hint">
+      <strong>스스로 정리하기</strong>
+      <p>who, which, that은 앞의 명사와 그 명사를 설명하는 부분을 연결하고 있어요.</p>
+      <p>이런 역할을 하는 단어를 무엇이라고 부를지 다음 단계에서 확인해 봅시다.</p>
+    </div>
+
+    <div class="actions">
+      <button class="secondary" id="back0">← 이전</button>
+      <button class="primary" id="to2">개념 확인하기 →</button>
+    </div>
+  </section>
+
+  <!-- STEP 3: 규칙 설명 -->
+  <section class="card hidden" id="stage2">
+    <div class="eyebrow">STEP 3 · GRAMMAR</div>
+    <h2>오늘 발견한 문법: 주격 관계대명사</h2>
+
+    <div class="definition">
+      <strong>관계대명사란?</strong>
+      <p>앞에 나온 명사에 대한 추가 정보를 설명하는 절과 연결해 주는 말입니다.</p>
+    </div>
+
+    <h3>1. 사람을 설명할 때: who</h3>
+    <p>The boy <strong>who plays soccer</strong> is kind.</p>
+    <p class="muted">축구를 하는 그 남자아이는 친절하다.</p>
+
+    <h3>2. 사물이나 동물을 설명할 때: which</h3>
+    <p>The ball <strong>which is on the desk</strong> is mine.</p>
+    <p class="muted">책상 위에 있는 공은 내 것이다.</p>
+
+    <h3>3. 사람·사물·동물을 설명할 때: that</h3>
+    <p>The dog <strong>that runs fast</strong> is Max.</p>
+    <p class="muted">빨리 달리는 개는 맥스다.</p>
+
+    <h3>왜 '주격' 관계대명사일까요?</h3>
+    <div class="story">
+      <p>The boy plays soccer.</p>
+      <p>The boy <strong>who plays soccer</strong> is kind.</p>
+    </div>
+    <p>
+      두 번째 문장의 who는 뒤의 동사 plays의 주어 역할을 합니다.
+      이처럼 관계대명사절 안에서 주어 역할을 하는 관계대명사를
+      <strong>주격 관계대명사</strong>라고 합니다.
+    </p>
+
+    <div class="definition">
+      <strong>기억할 내용</strong>
+      <p>• 사람: who</p>
+      <p>• 사물·동물: which</p>
+      <p>• 사람·사물·동물: that</p>
+      <p>• 주격 관계대명사 뒤에는 동사가 이어집니다.</p>
+    </div>
+    <p class="muted">
+      참고: 실제 영어에서는 사람을 설명할 때 that을 사용할 수도 있고,
+      사물·동물을 설명할 때 that과 which를 모두 사용할 수 있는 경우가 많습니다.
+    </p>
+
+    <div class="actions">
+      <button class="secondary" id="back1">← 이전</button>
+      <button class="primary" id="to3">문제 풀기 →</button>
+    </div>
+  </section>
+
+  <!-- STEP 4: 연습 -->
+  <section class="card hidden" id="stage3">
+    <div class="eyebrow">STEP 4 · PRACTICE</div>
+    <h2>새로운 문장에서 규칙을 적용해 보세요</h2>
+    <p class="muted">답을 선택하고 채점하기를 누르세요.</p>
+
+    <form id="quizForm">
+      <div class="question">
+        <div class="q-title">1. I know a girl (　　) speaks three languages.</div>
+        <label class="option"><input type="radio" name="q1" value="a"> which</label>
+        <label class="option"><input type="radio" name="q1" value="b"> who</label>
+        <label class="option"><input type="radio" name="q1" value="c"> where</label>
+        <div id="fb1" class="feedback hidden" aria-live="polite"></div>
+      </div>
+
+      <div class="question">
+        <div class="q-title">2. Look at the cat (　　) is sleeping on the sofa.</div>
+        <label class="option"><input type="radio" name="q2" value="a"> who</label>
+        <label class="option"><input type="radio" name="q2" value="b"> where</label>
+        <label class="option"><input type="radio" name="q2" value="c"> which</label>
+        <div id="fb2" class="feedback hidden" aria-live="polite"></div>
+      </div>
+
+      <div class="question">
+        <div class="q-title">3. 관계대명사의 역할은 무엇인가요?</div>
+        <label class="option"><input type="radio" name="q3" value="a"> 앞의 명사를 설명하는 절과 연결한다.</label>
+        <label class="option"><input type="radio" name="q3" value="b"> 문장의 시제를 과거로 바꾼다.</label>
+        <label class="option"><input type="radio" name="q3" value="c"> 항상 문장의 맨 앞에 온다.</label>
+        <div id="fb3" class="feedback hidden" aria-live="polite"></div>
+      </div>
+
+      <div class="question">
+        <div class="q-title">4. 두 문장을 바르게 연결한 것은?</div>
+        <p class="muted">I have a dog. It likes milk.</p>
+        <label class="option"><input type="radio" name="q4" value="a"> I have a dog who likes milk.</label>
+        <label class="option"><input type="radio" name="q4" value="b"> I have a dog which likes milk.</label>
+        <label class="option"><input type="radio" name="q4" value="c"> I have a dog where likes milk.</label>
+        <div id="fb4" class="feedback hidden" aria-live="polite"></div>
+      </div>
+
+      <div class="question">
+        <div class="q-title">5. 다음 문장의 주격 관계대명사는?</div>
+        <p>The student <strong>that studies hard</strong> gets good grades.</p>
+        <label class="option"><input type="radio" name="q5" value="a"> student</label>
+        <label class="option"><input type="radio" name="q5" value="b"> studies</label>
+        <label class="option"><input type="radio" name="q5" value="c"> that</label>
+        <div id="fb5" class="feedback hidden" aria-live="polite"></div>
+      </div>
+
+      <div class="actions">
+        <button class="secondary" type="button" id="back2">← 개념 복습</button>
+        <button class="primary" type="submit" id="submitQuiz">채점하기</button>
+      </div>
+    </form>
+
+    <div id="quizResult" class="result-box hidden" aria-live="polite">
+      <h3 style="margin-top:0">학습 결과</h3>
+      <div class="result-score" id="scoreText">0 / 5</div>
+      <p id="resultMessage"></p>
+      <button class="primary" type="button" id="retryBtn">다시 풀기</button>
+      <button class="secondary" type="button" id="reviewBtn">개념 다시 보기</button>
+    </div>
+  </section>
+
+  <div class="footer">Grammar Reading Lab · 중학교 3학년 영어 문법</div>
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  const names = ["글 읽기", "문법 발견", "개념 학습", "문제 풀이"];
+  const stages = [0, 1, 2, 3].map(
+    i => document.getElementById("stage" + i)
+  );
+  const tabs = Array.from(document.querySelectorAll(".step-tab"));
+  let currentStep = 0;
+  let highlighted = false;
+  let submitted = false;
+
+  const answers = { q1:"b", q2:"c", q3:"a", q4:"b", q5:"c" };
+  const explanations = {
+    q1:"girl은 사람입니다. who가 관계대명사절의 주어 역할을 합니다.",
+    q2:"cat은 동물이므로 which를 사용할 수 있습니다.",
+    q3:"관계대명사는 앞의 명사와 그 명사를 설명하는 절을 연결합니다.",
+    q4:"dog는 동물이므로 which를 사용할 수 있습니다.",
+    q5:"that은 관계대명사이며 뒤의 동사 studies의 주어 역할을 합니다."
+  };
+
+  function showStep(step) {
+    currentStep = step;
+    stages.forEach((el, i) =>
+      el.classList.toggle("hidden", i !== step)
+    );
+    tabs.forEach((tab, i) => {
+      tab.classList.toggle("active", i === step);
+      tab.setAttribute("aria-current", i === step ? "step" : "false");
+    });
+    document.getElementById("progressText").textContent =
+      "STEP " + (step + 1) + " · " + names[step];
+    document.getElementById("progressPercent").textContent =
+      Math.round((step + 1) / 4 * 100) + "% 진행";
+    document.getElementById("progressFill").style.width =
+      ((step + 1) / 4 * 100) + "%";
+    window.scrollTo({ top:0, behavior:"smooth" });
+  }
+
+  function unlockStep(step) {
+    tabs[step].disabled = false;
+    showStep(step);
+  }
+
+  document.getElementById("meaningHint").addEventListener("click", function () {
+    document.getElementById("meaningFeedback").classList.remove("hidden");
+    this.textContent = "내용 확인 완료";
+  });
+
+  document.getElementById("translationBtn").addEventListener("click", function () {
+    const panel = document.getElementById("translationText");
+    const opening = panel.classList.contains("hidden");
+    panel.classList.toggle("hidden", !opening);
+    this.textContent = opening ? "해석 닫기" : "해석 보기";
+    this.setAttribute("aria-expanded", String(opening));
+  });
+
+  document.getElementById("to1").addEventListener("click", () => unlockStep(1));
+  document.getElementById("back0").addEventListener("click", () => showStep(0));
+  document.getElementById("to2").addEventListener("click", () => unlockStep(2));
+  document.getElementById("back1").addEventListener("click", () => showStep(1));
+  document.getElementById("to3").addEventListener("click", () => unlockStep(3));
+  document.getElementById("back2").addEventListener("click", () => showStep(2));
+
+  tabs.forEach((tab, i) => {
+    tab.addEventListener("click", () => {
+      if (!tab.disabled) showStep(i);
+    });
+  });
+
+  document.getElementById("revealBtn").addEventListener("click", function () {
+    highlighted = !highlighted;
+    document.querySelectorAll("#noticingStory .target").forEach(el => {
+      el.classList.toggle("noticed", highlighted);
+    });
+    this.textContent = highlighted
+      ? "형광펜 표시 숨기기"
+      : "표현에 형광펜 표시하기";
+    document.getElementById("revealStatus").textContent = highlighted
+      ? "반복되는 who, which, that과 뒤의 설명 부분을 관찰해 보세요."
+      : "표시하기 전, 기억나는 반복 표현이 있는지 떠올려 보세요.";
+  });
+
+  function checkObservation(number, correct) {
+    const selected = document.querySelector(
+      'input[name="observe' + number + '"]:checked'
+    );
+    const feedback = document.getElementById("observeFeedback" + number);
+    feedback.classList.remove("hidden", "good", "bad", "neutral");
+
+    if (!selected) {
+      feedback.classList.add("neutral");
+      feedback.textContent = "먼저 답을 선택해 주세요.";
+      return;
+    }
+
+    if (selected.value === correct) {
+      feedback.classList.add("good");
+      feedback.textContent = number === 1
+        ? "맞아요! 앞의 명사가 누구 또는 무엇인지 나타냅니다."
+        : "맞아요! 뒤의 절이 앞에 있는 명사를 설명합니다.";
+    } else {
+      feedback.classList.add("bad");
+      feedback.textContent = number === 1
+        ? "각 표현 앞의 단어를 다시 살펴보세요."
+        : "표시된 표현 뒤의 말이 앞의 명사에 대해 알려 주는 정보를 살펴보세요.";
+    }
+  }
+
+  document.getElementById("checkObserve1").addEventListener("click", () =>
+    checkObservation(1, "a")
+  );
+  document.getElementById("checkObserve2").addEventListener("click", () =>
+    checkObservation(2, "a")
+  );
+
+  document.getElementById("quizForm").addEventListener("submit", function (event) {
+    event.preventDefault();
+    if (submitted) return;
+
+    let score = 0;
+
+    Object.keys(answers).forEach((name, index) => {
+      const selected = document.querySelector(
+        'input[name="' + name + '"]:checked'
+      );
+      const feedback = document.getElementById("fb" + (index + 1));
+
+      feedback.classList.remove("hidden", "good", "bad", "neutral");
+
+      document.querySelectorAll('input[name="' + name + '"]').forEach(input => {
+        input.disabled = true;
+        const label = input.closest(".option");
+        label.classList.remove("correct", "wrong");
+
+        if (input.value === answers[name]) label.classList.add("correct");
+        if (selected && input === selected && input.value !== answers[name]) {
+          label.classList.add("wrong");
+        }
+      });
+
+      if (selected && selected.value === answers[name]) {
+        score++;
+        feedback.classList.add("good");
+        feedback.textContent = "정답! " + explanations[name];
+      } else {
+        feedback.classList.add(selected ? "bad" : "neutral");
+        feedback.textContent = (selected ? "다시 확인해 보세요. " : "미응답입니다. ") +
+          "정답: " + answers[name].toUpperCase() + ". " + explanations[name];
+      }
+    });
+
+    submitted = true;
+    document.getElementById("scoreText").textContent = score + " / 5";
+    document.getElementById("resultMessage").textContent =
+      score === 5
+        ? "완벽해요! 문법 패턴을 잘 이해했어요."
+        : score >= 3
+          ? "잘했어요! 오답 해설을 읽고 다시 확인해 보세요."
+          : "개념 학습 단계로 돌아가 who, which, that의 쓰임을 복습해 보세요.";
+
+    document.getElementById("quizResult").classList.remove("hidden");
+    document.getElementById("submitQuiz").disabled = true;
+    document.getElementById("quizResult").scrollIntoView({
+      behavior:"smooth", block:"center"
+    });
+  });
+
+  document.getElementById("retryBtn").addEventListener("click", function () {
+    submitted = false;
+    document.getElementById("quizForm").reset();
+
+    Object.keys(answers).forEach((name, index) => {
+      document.getElementById("fb" + (index + 1)).classList.add("hidden");
+      document.querySelectorAll('input[name="' + name + '"]').forEach(input => {
+        input.disabled = false;
+        input.closest(".option").classList.remove("correct", "wrong");
+      });
+    });
+
+    document.getElementById("quizResult").classList.add("hidden");
+    document.getElementById("submitQuiz").disabled = false;
+    showStep(3);
+  });
+
+  document.getElementById("reviewBtn").addEventListener("click", () => showStep(2));
+
+  showStep(0);
+})();
+</script>
+</body>
+</html>
